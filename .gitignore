@@ -1,1 +1,8 @@
 /test_save/
+/main.spec
+/test.py
+/build/
+/dist/
+/data_analysis.py
+/.idea/
+/__pycache__/
