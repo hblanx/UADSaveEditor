@@ -214,18 +214,18 @@ def handle_crew(sm):
     """处理船员数"""
     current_crew = sm.get_crew_pool()
     print(f"当前船员数：{current_crew}")
-    new_training = tools.get_float_input("请输入新的平均船员训练水平（直接回车保持不变）：\n")
-    if new_training is not None:
-        sm.set_AverageCrewPoolTraining(new_training)
-        print(f"平均船员训练水平已更新为：{sm.get_AverageCrewPoolTraining()}")
-
-    # 处理平均船员训练水平
-    current_training = sm.get_AverageCrewPoolTraining()
-    print(f"当前平均船员训练水平：{current_training}")
-    new_crew = tools.get_int_input("请输入新的船员数（直接回车保持不变）：\n")
+    new_crew = tools.get_float_input("请输入新的船员数（直接回车保持不变）：\n")
     if new_crew is not None:
         sm.set_crew_pool(new_crew)
         print(f"船员数已更新为：{sm.get_crew_pool()}")
+
+    # 处理平均船员训练水平
+    current_training = sm.get_average_crew_pool_training()
+    print(f"当前平均船员训练水平：{current_training}")
+    new_training = tools.get_int_input("请输入新的船员训练水平，范围0-100（直接回车保持不变）：\n", min_value=0, max_value=100)
+    if new_training is not None:
+        sm.set_average_crew_pool_training(new_training)
+        print(f"船员训练水平已更新为：{sm.get_average_crew_pool_training()}")
 
 
 def instant_construction(sm):
@@ -264,7 +264,7 @@ def discover_oil(sm):
             # 根据省份名称获取原始省份Id
             original_province_id = name_to_id_map[selected_province]
             # 设置省份的油田发现状态
-            if sm.set_isOilDiscovery(original_province_id):
+            if sm.set_is_oil_discovery(original_province_id):
                 print(f"成功设置{original_province_id}")
                 break  # 成功设置后退出循环
             else:
@@ -365,6 +365,15 @@ def handle_government_type(sm):
     percent_by_party = sm.get_party_support()
 
     # 显示当前状态
+    print("""政体介绍：
+君主制：提供强大的军事预算和军事力量。
+君主立宪：平衡军事与经济，适合稳定发展。
+代议政治：强调经济增长，骚乱较少，但军事力量相对较弱。
+
+极左：高收入和低骚乱，但军事和GDP增长较慢。
+左：经济增长良好，军事适中。
+右：军事与经济相对平衡，适合多方面发展。
+极右：强大军事与预算，经济和收入较低。""")
     print(f"当前政体类型：{['君主专制', '君主立宪', '代议政治'][government_id]}")
     print("当前派别支持率（极左、左、中、右、极右）：")
     parties = ["极左", "左", "中", "右", "极右"]
