@@ -13,7 +13,8 @@ def display_country_properties_menu():
     print("[5] 修改船员数和训练程度")
     print("[6] 查看和修改骚乱")
     print("[7] 查看和修改政体")
-    print("[8] 返回主菜单")
+    print("[8] 修改GDP")
+    print("[9] 返回主菜单")
 
 def display_map_menu():
     print("\n地图与国家关系菜单：")
@@ -66,6 +67,7 @@ def main(debug=False):
         display_main_menu()
         main_choice = input("请选择一个操作：")
         if main_choice == '1':
+
             while True:
                 display_country_properties_menu()
                 country_choice = input("请选择一个操作：")
@@ -84,6 +86,8 @@ def main(debug=False):
                 elif country_choice == '7':
                     handle_government_type(sm)
                 elif country_choice == '8':
+                    modify_usa_provinces_income(sm)
+                elif country_choice == '9':
                     break
                 else:
                     print("无效的选择，请重新输入。")
@@ -135,69 +139,107 @@ def accelerate_all_research(sm):
     modified_count = sm.accelerate_all_research()
     print(f"成功添加并研发{modified_count}个科技项目")
 
+
+def modify_usa_provinces_income(sm):
+    """修改 IncomeGrowth，从而提升 GDP 和海军预算"""
+    print(f"""\
+【功能介绍】
+你将要修改你控制的所有地区的增长的经济（IncomeGrowth）数值。
+每个地区每回合会带来一定的经济增长，这些增长会影响国家的 GDP。
+而 GDP 决定了你每回合能获得多少海军资金。
+注意：
+- 这个修改不是直接加钱或增加GDP，而是修改"增长的经济"。
+- 建议设置较大的倍率（如10倍或100倍），才能在下一回合看到显著效果。
+""")
+
+    # 计算当前总IncomeGrowth
+    total_income_growth = 0
+    name = sm.get_player_name()
+    provinces = sm.get_provinces()
+    for p in provinces:
+        if p.get("Controller") == name:
+            total_income_growth += p.get("IncomeGrowth", 0)
+
+    multiplier = tools.get_float_input(f"当前可修改经济为：{total_income_growth}，请输入增长倍率：")
+    if multiplier is None:
+        print("已取消修改。")
+        return
+
+    modified_count = 0
+    name = sm.get_player_name()
+    provinces = sm.get_provinces()
+    for p in provinces:
+        if p.get("Controller") == name:
+            old_growth = p.get("IncomeGrowth", 0)
+            p["IncomeGrowth"] = old_growth * multiplier
+            modified_count += 1
+
+    sm.set_provinces(provinces)
+    print(f"已修改 {modified_count} 个地区的增长的经济，倍率为{multiplier}。")
+
+
+
 def handle_cash(sm):
+    """处理玩家金钱的修改操作"""
     current_cash = sm.get_cash()
     print(f"当前金钱：{current_cash}")
-    new_cash_multiplier = input("请输入金钱的变化倍数，如 1.5 表示翻 1.5 倍（直接回车保持不变）：\n")
-    if new_cash_multiplier:
-        new_cash = int(current_cash * float(new_cash_multiplier))
+    new_cash_multiplier = tools.get_float_input("请输入金钱的变化倍数，如 1.5 表示翻 1.5 倍（直接回车保持不变）：\n")
+    if new_cash_multiplier is not None:
+        new_cash = int(current_cash * new_cash_multiplier)
         sm.set_cash(new_cash)
         print(f"金钱已更新为：{sm.get_cash()}")
-
+    else:
+        print("已取消修改。")
 
 def handle_shipyard(sm):
+    """处理造船厂最大吨位的修改操作"""
     current_amount = sm.get_shipyard()
     print(f"当前船厂吨位：{current_amount}")
-    new_amount = input("请输入新的造船厂最大吨位，建造中的造船厂将在下一回合建好（直接回车保持不变）：\n")
-    if new_amount:
-        sm.set_shipyard(int(new_amount))
+    new_amount = tools.get_int_input("请输入新的造船厂最大吨位，建造中的造船厂将在下一回合建好（直接回车保持不变）：\n", min_value=0)
+    if new_amount is not None:
+        sm.set_shipyard(new_amount)
         print(f"船厂吨位已更新为：{sm.get_shipyard()}")
 
 
 def handle_reputation(sm):
+    """处理声望的修改操作"""
     current_reputation = sm.get_reputation()
     print(f"当前声望：{current_reputation}")
-    new_reputation = input("请输入新的声望数值（直接回车保持不变）：\n")
-    if new_reputation:
-        sm.set_reputation(int(new_reputation))
+    new_reputation = tools.get_int_input("请输入新的声望数值（直接回车保持不变）：\n", min_value=0)
+    if new_reputation is not None:
+        sm.set_reputation(new_reputation)
         print(f"声望已更新为：{sm.get_reputation()}")
 
-
 def handle_crew(sm):
-    # 处理船员数
+    """处理船员数"""
     current_crew = sm.get_crew_pool()
     print(f"当前船员数：{current_crew}")
-    new_crew = input("请输入新的船员数（直接回车保持不变）：\n")
-    if new_crew:
-        try:
-            new_crew = int(new_crew)
-            sm.set_crew_pool(new_crew)
-            print(f"船员数已更新为：{sm.get_crew_pool()}")
-        except Exception as e:
-            print(f"出错了。{e}")
+    new_training = tools.get_float_input("请输入新的平均船员训练水平（直接回车保持不变）：\n")
+    if new_training is not None:
+        sm.set_AverageCrewPoolTraining(new_training)
+        print(f"平均船员训练水平已更新为：{sm.get_AverageCrewPoolTraining()}")
 
     # 处理平均船员训练水平
     current_training = sm.get_AverageCrewPoolTraining()
     print(f"当前平均船员训练水平：{current_training}")
-    new_training = input("请输入新的平均船员训练水平（直接回车保持不变）：\n")
-    if new_training:
-        try:
-            new_training = float(new_training)
-            sm.set_AverageCrewPoolTraining(new_training)
-            print(f"平均船员训练水平已更新为：{sm.get_AverageCrewPoolTraining()}")
-        except Exception as e:
-            print(f"出错了。{e}")
+    new_crew = tools.get_int_input("请输入新的船员数（直接回车保持不变）：\n")
+    if new_crew is not None:
+        sm.set_crew_pool(new_crew)
+        print(f"船员数已更新为：{sm.get_crew_pool()}")
 
 
 def instant_construction(sm):
+    """快速建造"""
     i = sm.instant_construction()
     print(f"成功加速{i}艘船")
 
 def instant_colonial_conquest(sm):
+    """快速殖民地入侵"""
     i = sm.instant_colonial_conquest()
     print(f"成功加速{i}个事件")
 
 def discover_oil(sm):
+    """发现石油"""
     # 获取尚未发现石油的省份列表及其名称到Id的映射
     provinces, name_to_id_map = sm.get_provinces_not_discovered_oil()
     search_again = False  # 标记是否需要重新进行模糊搜索
@@ -235,6 +277,7 @@ def discover_oil(sm):
             search_again = selected_province
 
 def handle_relations(sm):
+    """处理国际关系"""
     # 打印关系矩阵
     relations_matrix, countries = sm.build_relations_matrix()
     tools.print_relations_matrix(relations_matrix, countries)
@@ -264,15 +307,8 @@ def handle_relations(sm):
             country_a, country_b = country_names  # 解包国家名称
 
             # 输入 attitude 值
-            new_attitude = input("输入新的 attitude 值，范围在-100到100之间: ")
-
-            # 尝试将输入的 attitude 转换为浮点数
-            try:
-                new_attitude = float(new_attitude)
-                if not -100 <= new_attitude <= 100:
-                    print("无效的 attitude 值，请重新输入。")
-                    continue
-            except ValueError:
+            new_attitude = tools.get_float_input("输入新的 attitude 值，范围在-100到100之间: ", allow_empty=False)
+            if new_attitude is None or not -100 <= new_attitude <= 100:
                 print("无效的 attitude 值，请重新输入。")
                 continue
 
@@ -286,6 +322,7 @@ def handle_relations(sm):
 
 
 def instant_movement(sm):
+    """快速移动"""
     moving_groups, index_map = sm.get_moving_groups()
     if not moving_groups:
         print("当前没有移动的船团。")
@@ -299,12 +336,12 @@ def instant_movement(sm):
               f"共{len(group['Vessels'])}艘船。")
     try:
         print("注意：在使用瞬间移动功能后，船团的图标会乱飘，请放心下一回合后会恢复正常。如果必须要操作，找到乱飘的图标后即可正常操作。")
-        choice = input("请输入要瞬间完成移动的船团编号（按下回车取消）：")
-        if choice == '':
+        choice = tools.get_int_input("请输入要瞬间完成移动的船团编号（按下回车取消）：", min_value=1,
+                                     max_value=len(moving_groups))
+        if choice is None:
             print("操作已取消。")
             return
-
-        choice = int(choice) - 1
+        choice = choice - 1
         original_index = index_map[choice]  # 使用映射找到原始列表中的索引
         sm.instant_move(original_index)  # 传入原始索引到 instant_move 方法
         print("船团已瞬间移动至目的地。")
@@ -313,21 +350,15 @@ def instant_movement(sm):
 
 
 def handle_respect(sm):
-    # 骚乱值
+    """修改骚乱值"""
     print(f"当前骚乱值:{sm.get_respect()}")
-    new_respect = input("请输入新的骚乱值（直接回车保持不变）：\n")
-    if new_respect:
-        try:
-            new_respect = float(new_respect)
-            sm.set_respect(new_respect)
-            print(f"骚乱已更新为：{sm.get_respect()}")
-        except ValueError:
-            print("请输入有效的数字。")
-        except Exception as e:
-            print(f"出错了。{e}")
-
+    new_respect = tools.get_float_input("请输入新的骚乱值（直接回车保持不变）：\n")
+    if new_respect is not None:
+        sm.set_respect(new_respect)
+        print(f"骚乱已更新为：{sm.get_respect()}")
 
 def handle_government_type(sm):
+    """处理政府类型/政体"""
     # 初始化政府系统
     government_id = sm.get_government_type()
     new_government_id = None
@@ -342,18 +373,11 @@ def handle_government_type(sm):
 
     # 选择新的政府类型
     while True:
-        new_government_input = input("请输入新的政体ID编号（0: 君主专制, 1: 君主立宪, 2: 代议政治，直接回车保持不变）：\n")
-        if new_government_input.strip() == '':  # 如果输入为空，保持不变
-            break
-        try:
-            new_government_id = int(new_government_input)
-            if new_government_id < 0 or new_government_id > 2:
-                print("无效的政体ID，请输入0、1或2。")
-            else:
-                sm.set_government_type(new_government_id)
-                break  # 有效输入，跳出循环
-        except ValueError:
-            print("请输入一个有效的数字。")  # 非法输入提示
+        new_government_id = tools.get_int_input(
+            "请输入新的政体ID编号（0: 君主专制, 1: 君主立宪, 2: 代议政治，直接回车保持不变）：\n", min_value=0, max_value=2)
+        if new_government_id is not None:
+            sm.set_government_type(new_government_id)
+            break  # 有效输入，跳出循环
 
     # 显示派别支持率并让用户选择
     while True:

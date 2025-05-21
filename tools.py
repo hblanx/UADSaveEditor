@@ -146,3 +146,35 @@ def list_government_types():
     for gid, gname in GOVERNMENT_MAPPING.items():
         msg += f"{gid}: {gname}\n"
     return msg
+
+def get_float_input(prompt, allow_empty=True):
+    """
+    获取用户浮点数输入，支持空输入和错误处理
+    非浮点数返回None
+    """
+    while True:
+        user_input = input(prompt).strip()
+        if not user_input and allow_empty:
+            return None
+        try:
+            return float(user_input)
+        except ValueError:
+            print("输入无效，请输入一个有效的数字。")
+
+def get_int_input(prompt, allow_empty=True, min_value=None, max_value=None):
+    """获取用户整数输入，支持空输入、范围限制和错误处理"""
+    while True:
+        user_input = input(prompt).strip()
+        if not user_input and allow_empty:
+            return None
+        try:
+            value = int(user_input)
+            if min_value is not None and value < min_value:
+                print(f"输入必须大于或等于 {min_value}。")
+                continue
+            if max_value is not None and value > max_value:
+                print(f"输入必须小于或等于 {max_value}。")
+                continue
+            return value
+        except ValueError:
+            print("输入无效，请输入一个有效的整数。")
