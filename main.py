@@ -70,24 +70,24 @@ def main(debug=False):
 
             while True:
                 display_country_properties_menu()
-                country_choice = input("请选择一个操作：")
-                if country_choice == '1':
+                choice = input("请选择一个操作：")
+                if choice == '1':
                     sm.update_turn_by_date()
-                elif country_choice == '2':
+                elif choice == '2':
                     handle_cash(sm)
-                elif country_choice == '3':
+                elif choice == '3':
                     handle_shipyard(sm)
-                elif country_choice == '4':
+                elif choice == '4':
                     handle_reputation(sm)
-                elif country_choice == '5':
+                elif choice == '5':
                     handle_crew(sm)
-                elif country_choice == '6':
+                elif choice == '6':
                     handle_respect(sm)
-                elif country_choice == '7':
+                elif choice == '7':
                     handle_government_type(sm)
-                elif country_choice == '8':
+                elif choice == '8':
                     modify_usa_provinces_income(sm)
-                elif country_choice == '9':
+                elif choice == '9':
                     break
                 else:
                     print("无效的选择，请重新输入。")
@@ -214,7 +214,7 @@ def handle_crew(sm):
     """处理船员数"""
     current_crew = sm.get_crew_pool()
     print(f"当前船员数：{current_crew}")
-    new_crew = tools.get_float_input("请输入新的船员数（直接回车保持不变）：\n")
+    new_crew = tools.get_int_input("请输入新的船员数（直接回车保持不变）：\n")
     if new_crew is not None:
         sm.set_crew_pool(new_crew)
         print(f"船员数已更新为：{sm.get_crew_pool()}")
@@ -222,7 +222,7 @@ def handle_crew(sm):
     # 处理平均船员训练水平
     current_training = sm.get_average_crew_pool_training()
     print(f"当前平均船员训练水平：{current_training}")
-    new_training = tools.get_int_input("请输入新的船员训练水平，范围0-100（直接回车保持不变）：\n", min_value=0, max_value=100)
+    new_training = tools.get_float_input("请输入新的船员训练水平，范围0-100（直接回车保持不变）：\n")
     if new_training is not None:
         sm.set_average_crew_pool_training(new_training)
         print(f"船员训练水平已更新为：{sm.get_average_crew_pool_training()}")
@@ -381,12 +381,12 @@ def handle_government_type(sm):
         print(f"{parties[i]}: {percent}%")
 
     # 选择新的政府类型
-    while True:
-        new_government_id = tools.get_int_input(
-            "请输入新的政体ID编号（0: 君主专制, 1: 君主立宪, 2: 代议政治，直接回车保持不变）：\n", min_value=0, max_value=2)
-        if new_government_id is not None:
-            sm.set_government_type(new_government_id)
-            break  # 有效输入，跳出循环
+    new_government_id = tools.get_int_input(
+        "请输入新的政体ID编号（0: 君主专制, 1: 君主立宪, 2: 代议政治，直接回车保持不变）：\n", min_value=0, max_value=2, allow_empty=True)
+    if new_government_id is not None:
+        sm.set_government_type(new_government_id)
+    else:
+        return # 用户输入空白退出
 
     # 显示派别支持率并让用户选择
     while True:
